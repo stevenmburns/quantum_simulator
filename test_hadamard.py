@@ -30,4 +30,4 @@ def test_f():
     assert (e( 4, [0,0]) == np.array( [1,0,0,0])).all()
     assert (e( 4, [0,1]) == np.array( [0,1,0,0])).all()
     assert (e( 4, [1,0]) == np.array( [0,0,1,0])).all()
-    assert (e( 4, [1,1]) == np.array( [0,0,0,1])).all()        
+    assert (e( 4, [1,1]) == np.array( [0,0,0,1])).all()
