@@ -32,12 +32,3 @@ def coord( lst):
 def e( N, lst):
     c = coord(lst)
     return np.array( [ 1 if i == c else 0 for i in range(N)])
-
-if __name__ == "__main__":
-    simple = np.kron(hadamard(2), np.eye(2)).dot(cnot())
-    print( simple)
-
-    print( sq(simple.dot(e( 4, [0,0]))))
-    print( sq(simple.dot(e( 4, [0,1]))))
-    print( sq(simple.dot(e( 4, [1,0]))))
-    print( sq(simple.dot(e( 4, [1,1]))))
