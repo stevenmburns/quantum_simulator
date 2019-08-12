@@ -1,0 +1,74 @@
+version: 2.1
+
+executors:
+  docker-executor:
+    docker:
+      - image: docker:18.06.3-ce-git
+    working_directory: /work/workspace
+
+  git-executor:
+    docker:
+      - image: alpine/git
+    working_directory: /work/workspace
+
+jobs:
+  start:
+    executor: git-executor
+    steps:
+      - attach_workspace:
+          at: /work/workspace
+      - checkout
+      - persist_to_workspace:
+          root: /work/workspace
+          paths: .
+
+  build-simple:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          docker build -f Dockerfile -t simple_image  .
+          docker run --name simple_container simple_image bash -c "source /general/bin/activate && cd /simple && coverage run --source=simple,test_hadamard -m pytest --junit-xml=junit.xml && coverage html && coverage xml && mkdir -p /test-reports/simple && cp junit.xml /test-reports/simple && mkdir -p /coverage-reports/simple && cp -r coverage.xml htmlcov /coverage-reports/simple"
+          docker cp simple_container:coverage-reports .
+          docker cp simple_container:test-reports .
+          docker rm simple_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/simple
+            - coverage-reports/simple
+
+  finish:
+    executor: git-executor
+
+    steps:
+      - attach_workspace:
+          at: /work/workspace
+
+      - store_test_results:
+          path: test-reports
+
+      - store_artifacts:
+          path: test-reports
+
+      - store_artifacts:
+          path: coverage-reports
+
+
+workflows:
+  version: 2.1
+
+  full:
+    jobs:
+      - start
+      - build-simple:
+          requires:
+            - start 
+      - finish:
+          requires:
+            - build-simple
